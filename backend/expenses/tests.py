@@ -187,3 +187,34 @@ class SharedExpensesTestCase(TestCase):
         # Detects split percentage sum mismatch
         mismatch_anomalies = [a for a in report['anomalies'] if a['anomaly_type'] == 'Split Percentage Sum Mismatch']
         self.assertEqual(len(mismatch_anomalies), 1)
+
+    # ==========================================================================
+    # TEST: OFFLINE AI ASSISTANT CHAT BOT ENGINE
+    # ==========================================================================
+    def test_ai_assistant_chatbot(self):
+        """
+        Verify that processing AI queries correctly handles greetings, settlements,
+        user ledgers, and catch-alls.
+        """
+        from .ai_assistant import process_ai_query
+        
+        # Scenario 1: Greeting query
+        greeting_reply = process_ai_query(self.group.id, "hello, can you help me?")
+        self.assertIn("Hello! I am your FairShare AI Assistant", greeting_reply)
+        self.assertIn("Who owes whom?", greeting_reply)
+
+        # Scenario 2: Settle query
+        settlement_reply = process_ai_query(self.group.id, "who owes who and how to settle?")
+        self.assertIn("Sab settled hai!", settlement_reply) # No expenses yet
+
+        # Scenario 3: Timeline query
+        timeline_reply = process_ai_query(self.group.id, "show me active timeline dates")
+        self.assertIn("Here is the group timeline and active periods", timeline_reply)
+        self.assertIn("Aisha", timeline_reply)
+        self.assertIn("Meera", timeline_reply)
+
+        # Scenario 4: Specific user balance query
+        rohan_balance_reply = process_ai_query(self.group.id, "explain Rohan's balance status")
+        self.assertIn("Balance Audit for **Rohan**", rohan_balance_reply)
+        self.assertIn("is fully settled", rohan_balance_reply)
+

@@ -13,6 +13,25 @@ const GroupDetails = () => {
   const [selectedUserLedger, setSelectedUserLedger] = useState(null);
   const [selectedUsername, setSelectedUsername] = useState('');
 
+  // AI assistant chat state
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      sender: 'ai',
+      text: "Hello! I am your FairShare AI Assistant. 😊\n\nAap mujhse group balances, simplified settlements, temporal timelines, ya CSV anomalies ke baare me kuch bhi pooch sakte hain.\n\n*Try clicking one of the suggested query chips below!*",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatSuggestions, setChatSuggestions] = useState([
+    "Who owes whom?",
+    "Explain Rohan's balance",
+    "When did Meera leave?",
+    "Are there duplicate anomalies?",
+    "Show total group expenses"
+  ]);
+
   // Modals state
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showSettlementModal, setShowSettlementModal] = useState(false);
@@ -208,6 +227,57 @@ const GroupDetails = () => {
       setSelectedUserLedger(userData.ledger);
       setSelectedUsername(username);
     }
+  };
+
+  const handleSendQuery = async (queryText) => {
+    if (!queryText.trim()) return;
+    
+    const userMsg = {
+      sender: 'user',
+      text: queryText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatInput('');
+    setChatLoading(true);
+    
+    try {
+      const response = await api.post(`/groups/${id}/ai-chat/`, {
+        query: queryText
+      });
+      
+      const aiMsg = {
+        sender: 'ai',
+        text: response.data.reply,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      
+      setChatMessages((prev) => [...prev, aiMsg]);
+      if (response.data.suggested_queries) {
+        setChatSuggestions(response.data.suggested_queries);
+      }
+    } catch (err) {
+      console.error("AI chat error:", err);
+      const errMsg = {
+        sender: 'ai',
+        text: "Sorry, I encountered an error. Please verify your backend server connection.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setChatMessages((prev) => [...prev, errMsg]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const formatMessageText = (text) => {
+    if (!text) return '';
+    let formatted = text.replace(/^### (.*$)/gim, '<h4 class="font-bold text-slate-800 text-sm mt-2 mb-1">$1</h4>');
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+    formatted = formatted.replace(/^- (.*$)/gim, '<li class="ml-4 list-disc text-slate-600">$1</li>');
+    formatted = formatted.split('\n').join('<br />');
+    return formatted;
   };
 
   const formatCurrency = (amt) => {
@@ -710,6 +780,127 @@ const GroupDetails = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* AI Assistant Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setShowAIChat(true)}
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-primary-500 to-indigo-600 text-white shadow-lg hover:shadow-primary-300 hover:scale-105 transition transform duration-200 group focus:outline-none focus:ring-4 focus:ring-primary-200 cursor-pointer"
+        >
+          {/* Pulsing glow ring around AI button */}
+          <span className="absolute inset-0 rounded-full bg-primary-500 opacity-30 animate-ping group-hover:animate-none"></span>
+          
+          <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+      </div>
+
+      {/* AI Assistant Chat Drawer */}
+      {showAIChat && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex justify-end z-50 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 animate-in slide-in-from-right duration-250">
+            {/* Header */}
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-primary-100 text-primary-600 rounded-xl">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base leading-tight">FairShare AI Assistant</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Online & Verified</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAIChat(false)}
+                className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-lg transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Messages body */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+              {chatMessages.map((msg, index) => {
+                const isAI = msg.sender === 'ai';
+                return (
+                  <div key={index} className={`flex flex-col ${isAI ? 'items-start' : 'items-end'}`}>
+                    <div
+                      className={`px-4 py-2.5 rounded-2xl text-sm shadow-xs ${
+                        isAI
+                          ? 'bg-white text-slate-700 border border-slate-150 rounded-tl-none leading-relaxed'
+                          : 'bg-primary-500 text-white rounded-tr-none'
+                      }`}
+                      dangerouslySetInnerHTML={{ __html: formatMessageText(msg.text) }}
+                    />
+                    <span className="text-[9px] text-slate-400 font-medium mt-1 px-1">{msg.time}</span>
+                  </div>
+                );
+              })}
+              
+              {chatLoading && (
+                <div className="flex flex-col items-start">
+                  <div className="bg-white border border-slate-150 px-4 py-3 rounded-2xl rounded-tl-none flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce duration-1000"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce duration-1000 [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce duration-1000 [animation-delay:0.4s]"></span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Suggestions & Input Footer */}
+            <div className="p-3 border-t border-slate-100 bg-white space-y-3">
+              {/* Suggestion Chips */}
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                {chatSuggestions.map((query, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSendQuery(query)}
+                    className="flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 text-slate-600 text-xs font-semibold py-1.5 px-3 rounded-full transition cursor-pointer"
+                  >
+                    {query}
+                  </button>
+                ))}
+              </div>
+
+              {/* Chat Input Field */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendQuery(chatInput);
+                }}
+                className="flex gap-2 items-center"
+              >
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask about balances, timeline, or anomalies..."
+                  className="flex-1 px-3 py-2 border border-slate-250 rounded-xl focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim() || chatLoading}
+                  className="bg-primary-500 hover:bg-primary-600 disabled:opacity-40 text-white p-2 rounded-xl transition flex items-center justify-center cursor-pointer"
+                >
+                  <svg className="w-5 h-5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -17,6 +17,7 @@ from .serializers import (
 )
 from .calculations import calculate_group_balances, simplify_debts
 from .anomaly_engine import run_anomaly_detection, clean_username, parse_dirty_date, FIXED_USD_TO_INR_RATE, VALID_USERS
+from .ai_assistant import process_ai_query
 
 # ==============================================================================
 # AUTHENTICATION: REGISTER VIEW
@@ -137,7 +138,37 @@ class GroupBalancesView(APIView):
                 "simplified_settlements": simplified_payments
             }, status=status.HTTP_200_OK)
         except Group.DoesNotExist:
-            return Response({"error": "Group not found."}, status=status.HTTP_44_NOT_FOUND)
+            return Response({"error": "Group not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GroupAIChatView(APIView):
+    """
+    Why this exists:
+    Endpoint: POST /api/groups/{id}/ai-chat/
+    Connects frontend chat queries to the offline AI Assistant NLP engine.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk=None):
+        query = request.data.get('query', '')
+        if not query:
+            return Response({"error": "Query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            reply = process_ai_query(pk, query)
+            suggested_queries = [
+                "Who owes whom?",
+                "Are there duplicate anomalies?",
+                "When did Meera leave?",
+                "Explain Rohan's balance",
+                "Show total group expenses"
+            ]
+            return Response({
+                "reply": reply,
+                "suggested_queries": suggested_queries
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SettlementViewSet(viewsets.ModelViewSet):

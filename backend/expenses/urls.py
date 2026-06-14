@@ -9,7 +9,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     RegisterView, GroupViewSet, ExpenseViewSet, SettlementViewSet,
     GroupBalancesView, CSVImportView, ImportReportDetailView, 
-    ApproveAnomalyView, SetupDefaultEnvironmentView, UserViewSet
+    ApproveAnomalyView, SetupDefaultEnvironmentView, UserViewSet,
+    GroupAIChatView
 )
 
 # Using DefaultRouter for standard REST ViewSets (Groups, Expenses, Settlements)
@@ -28,6 +29,7 @@ urlpatterns = [
     
     # Custom Calculation and Traceability endpoint
     path('groups/<int:pk>/balances/', GroupBalancesView.as_view(), name='group_balances'),
+    path('groups/<int:pk>/ai-chat/', GroupAIChatView.as_view(), name='group_ai_chat'),
     
     # CSV Import Parser endpoint
     path('import/', CSVImportView.as_view(), name='csv_import'),
