@@ -18,7 +18,7 @@ const GroupDetails = () => {
   const [chatMessages, setChatMessages] = useState([
     {
       sender: 'ai',
-      text: "Hello! I am your FairShare AI Assistant. 😊\n\nAap mujhse group balances, simplified settlements, temporal timelines, ya CSV anomalies ke baare me kuch bhi pooch sakte hain.\n\n*Try clicking one of the suggested query chips below!*",
+      text: "Hello! I am your FairShare AI Assistant. 😊\n\nYou can ask me questions about group balances, simplified settlements, temporal timelines, or CSV anomalies.\n\n*Try clicking one of the suggested query chips below!*",
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);

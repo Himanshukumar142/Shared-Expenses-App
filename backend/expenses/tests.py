@@ -205,7 +205,7 @@ class SharedExpensesTestCase(TestCase):
 
         # Scenario 2: Settle query
         settlement_reply = process_ai_query(self.group.id, "who owes who and how to settle?")
-        self.assertIn("Sab settled hai!", settlement_reply) # No expenses yet
+        self.assertIn("Everyone is fully settled", settlement_reply) # No expenses yet
 
         # Scenario 3: Timeline query
         timeline_reply = process_ai_query(self.group.id, "show me active timeline dates")

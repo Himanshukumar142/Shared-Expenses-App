@@ -2,7 +2,7 @@
 Why this exists:
 This file implements the core Natural Language Processing (NLP) rule engine
 for our FairShare offline AI Assistant. It parses queries, queries the database,
-and generates smart, accurate conversational responses in Hinglish and English.
+and generates smart, accurate conversational responses in English.
 """
 
 import re
@@ -44,9 +44,9 @@ def process_ai_query(group_id, query_text):
     if any(greet in query_text for greet in ['hi', 'hello', 'hey', 'help', 'assist', 'kaise', 'options']):
         reply = (
             f"Hello! I am your FairShare AI Assistant for the **{group.name}** group. 😊\n\n"
-            "Aap mujhse group expenses aur balances ke baare me natural language me pooch sakte hain. "
+            "You can ask me questions about group expenses and balances in natural language. "
             "Try these queries:\n"
-            "- *'Who owes whom?'* or *'Settle kaise hoga?'* (Aisha's Simplified settlements)\n"
+            "- *'Who owes whom?'* or *'How to settle?'* (Aisha's Simplified settlements)\n"
             "- *'Explain Rohan's balance'* or *'Rohan outstanding status?'* (Rohan's Traceability)\n"
             "- *'Are there duplicates?'* or *'CSV anomalies?'* (Meera's review cards)\n"
             "- *'When did Meera leave?'* or *'Who joined when?'* (Sam's & Meera's timelines)\n"
@@ -59,7 +59,7 @@ def process_ai_query(group_id, query_text):
     # --------------------------------------------------------------------------
     if any(k in query_text for k in ['owe', 'settle', 'pay', 'payment', 'hisab', 'kisko', 'aisha', 'simplify']):
         if not simplified_settlements:
-            return "Sab settled hai! 😄 Kisi ko kisi ke paise nahi dene hain."
+            return "Everyone is fully settled! 😄 No outstanding debts."
         
         reply = "Here are the simplified settlements (Aisha's greedy minimizer algorithm): 💸\n\n"
         for idx, s in enumerate(simplified_settlements):
@@ -74,7 +74,7 @@ def process_ai_query(group_id, query_text):
         # Find pending anomalies
         pending_anomalies = ImportAnomaly.objects.filter(status='pending_review')
         if not pending_anomalies.exists():
-            return "Abhi koi duplicates ya anomalies pending review me nahi hain! CSV is clean. 👍"
+            return "There are no duplicate expenses or anomalies pending review! The CSV import data is clean. 👍"
         
         reply = f"Detected **{pending_anomalies.count()}** pending anomalies in the CSV review queue: ⚠️\n\n"
         for a in pending_anomalies:
