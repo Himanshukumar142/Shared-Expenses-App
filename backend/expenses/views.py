@@ -16,7 +16,7 @@ from .serializers import (
     ImportAnomalySerializer
 )
 from .calculations import calculate_group_balances, simplify_debts
-from .anomaly_engine import run_anomaly_detection, clean_username, parse_dirty_date, FIXED_USD_TO_INR_RATE
+from .anomaly_engine import run_anomaly_detection, clean_username, parse_dirty_date, FIXED_USD_TO_INR_RATE, VALID_USERS
 
 # ==============================================================================
 # AUTHENTICATION: REGISTER VIEW
@@ -501,3 +501,19 @@ class SetupDefaultEnvironmentView(APIView):
             "group": group.name,
             "group_id": group.id
         }, status=status.HTTP_200_OK)
+
+
+# ==============================================================================
+# USER VIEWSET
+# ==============================================================================
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Why this exists:
+    Endpoints: GET /api/users/
+    Provides a read-only list of all registered users in the system.
+    Useful for selecting users in dropdown menus.
+    """
+    queryset = User.objects.all().order_by('username')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+

@@ -9,7 +9,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     RegisterView, GroupViewSet, ExpenseViewSet, SettlementViewSet,
     GroupBalancesView, CSVImportView, ImportReportDetailView, 
-    ApproveAnomalyView, SetupDefaultEnvironmentView
+    ApproveAnomalyView, SetupDefaultEnvironmentView, UserViewSet
 )
 
 # Using DefaultRouter for standard REST ViewSets (Groups, Expenses, Settlements)
@@ -17,6 +17,7 @@ router = DefaultRouter()
 router.register(r'groups', GroupViewSet, basename='group')
 router.register(r'expenses', ExpenseViewSet, basename='expense')
 router.register(r'settlements', SettlementViewSet, basename='settlement')
+router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
     # Router inclusion (provides /api/groups/, /api/expenses/, /api/settlements/)

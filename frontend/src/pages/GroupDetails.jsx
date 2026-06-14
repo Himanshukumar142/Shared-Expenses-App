@@ -54,8 +54,8 @@ const GroupDetails = () => {
       setBalancesData(balancesRes.data);
       
       // Load system users for Add Member dropdown
-      const usersRes = await api.post('/setup/'); // ensures standard users are generated
-      setAllSystemUsers(usersRes.data.users);
+      const usersRes = await api.get('/users/');
+      setAllSystemUsers(usersRes.data);
       
       // Default set first payer
       if (groupRes.data.members?.length > 0) {
@@ -177,22 +177,15 @@ const GroupDetails = () => {
 
   const handleAddMember = async (e) => {
     e.preventDefault();
+    if (!newMemberUserId) {
+      alert("Please select a user.");
+      return;
+    }
     setMemberLoading(true);
     
-    // Resolve user_id from username selected
     try {
-      // Setup API returns the users. We find the matching registered user.
-      const response = await api.get('/groups/'); // generic load to check
-      // Find the user object by matching username
-      const usersList = await api.post('/setup/');
-      const selectedUser = Object.entries(usersList.data.users).find(([k, v]) => k === newMemberUserId);
-      
-      let resolvedId = newMemberUserId;
-      // If we passed a username, we should resolve its DB user ID.
-      const usersRes = await api.get(`/groups/`); // standard query
-      
       await api.post(`/groups/${id}/members/`, {
-        user_id: parseInt(resolvedId),
+        user_id: parseInt(newMemberUserId),
         joined_at: newMemberJoined,
         left_at: newMemberLeft || null
       });
@@ -203,7 +196,7 @@ const GroupDetails = () => {
       loadData();
     } catch (err) {
       console.error("Failed to add member:", err);
-      alert(err.response?.data?.error || "Error adding member.");
+      alert(err.response?.data?.error || "Error adding member. Make sure they are not already a member.");
     } finally {
       setMemberLoading(false);
     }
@@ -663,18 +656,19 @@ const GroupDetails = () => {
             <form onSubmit={handleAddMember} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Select User</label>
-                {/* Standard input selection for users */}
-                <input
-                  type="text"
+                <select
                   required
                   value={newMemberUserId}
                   onChange={(e) => setNewMemberUserId(e.target.value)}
-                  placeholder="Enter User Database ID (e.g. 5 for Sam, 4 for Meera)"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">
-                  Seed IDs: 1: Aisha, 2: Rohan, 3: Priya, 4: Meera, 5: Sam, 6: Dev.
-                </span>
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">-- Select flatmate user --</option>
+                  {allSystemUsers.map((user_obj) => (
+                    <option key={user_obj.id} value={user_obj.id}>
+                      {user_obj.username}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
