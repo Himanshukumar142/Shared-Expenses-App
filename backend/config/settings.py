@@ -84,11 +84,26 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # server off), we fall back to SQLite to ensure the application never crashes
 # and is always testable out of the box.
 # ==============================================================================
+import urllib.parse as urlparse
+
 DB_NAME = os.getenv('DB_NAME', 'expenses_db')
 DB_USER = os.getenv('DB_USER', 'postgres')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
+
+# Support standard single database connection string URL (e.g. from Neon or Render)
+db_url = os.getenv('DATABASE_URL')
+if db_url:
+    try:
+        url = urlparse.urlparse(db_url)
+        DB_NAME = url.path[1:]
+        DB_USER = url.username
+        DB_PASSWORD = url.password
+        DB_HOST = url.hostname
+        DB_PORT = str(url.port) if url.port else '5432'
+    except Exception as e:
+        print(f"DATABASE URL PARSE ERROR: {e}")
 
 use_postgres = False
 try:
