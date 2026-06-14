@@ -48,3 +48,13 @@ This log documents the key engineering decisions, options considered, and the ra
   2. Store the logged-in username in `localStorage` upon successful login.
 * **Chosen Solution**: **Option 2 (LocalStorage username)**.
 * **Why**: It keeps the frontend packages clean, avoids adding third-party dependencies to `package.json`, and is very simple to explain during the live interview session.
+
+---
+
+### Decision 6: Offline AI Assistant Chatbot (Local NLP vs External API Key)
+* **Options Considered**:
+  1. External LLM API Integration (OpenAI/Gemini API calls).
+  2. Offline NLP Regex-Based Matcher (Direct SQL calculation queries mapped to natural language responses).
+* **Chosen Solution**: **Option 2 (Offline NLP Matcher)**.
+* **Why**: An external API requires setting up paid or rate-limited API keys in `.env`, is prone to network latency, and LLMs often hallucinate when doing arithmetic operations on balances. Option 2 provides a 100% reliable, zero-latency, and mathematically accurate assistant that works offline, which is critical for a smooth live interview evaluation.
+
