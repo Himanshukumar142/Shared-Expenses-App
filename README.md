@@ -4,11 +4,11 @@ FairShare is a Splitwise-like Shared Expenses App built as a software engineerin
 
 ---
 
-## Technical Stack
+## Technical Stack & AI Used
 * **Backend**: Django REST Framework (DRF) + Simple JWT.
 * **Frontend**: React (Vite) + Tailwind CSS + Axios.
 * **Database**: PostgreSQL (with a self-healing local SQLite fallback).
-* **AI Collaborator**: Gemini 3.5 Flash (High).
+* **AI Collaborator**: Gemini 3.5 Flash (High) via Antigravity IDE. Detailed prompts, error logs, and co-development case studies are documented in [AI_USAGE.md](file:///c:/Users/hroya/python-hack/AI_USAGE.md).
 
 ---
 
@@ -19,6 +19,7 @@ FairShare is a Splitwise-like Shared Expenses App built as a software engineerin
 4. **USD Multi-currency (Priya's Request)**: Preserves original values, applies exchange rates, and stores normalized INR.
 5. **Debt Simplification (Aisha's Request)**: Greedy creditor-debtor matching to minimize transactions.
 6. **CSV Import Anomaly Engine**: Parses inconsistent dates, quoted amounts, spelling aliases (`Priya S` -> `Priya`), and handles duplicates (Meera's review workflow).
+7. **Offline AI Expense Assistant**: Interactive chatbot that answers natural language questions about outstanding ledger balances, temporal memberships, and import anomalies instantly offline.
 
 ---
 
@@ -34,7 +35,7 @@ Make sure Python 3.10+ and Node.js 18+ are installed.
    ```
 2. Install dependencies:
    ```bash
-   pip install django djangorestframework djangorestframework-simplejwt django-cors-headers psycopg2-binary python-dotenv
+   pip install -r requirements.txt
    ```
 3. Run the database creator (ensures `expenses_db` is created in local PostgreSQL, or issues a warning to default to SQLite):
    ```bash
