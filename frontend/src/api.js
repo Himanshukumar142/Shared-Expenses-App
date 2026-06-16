@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base API configuration pointing to Django backend server
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
 });
 
 // Interceptor to automatically attach the JWT token to every outgoing request
